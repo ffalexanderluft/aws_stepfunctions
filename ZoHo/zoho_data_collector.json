@@ -1,0 +1,198 @@
+{
+	"StartAt": "Lambda zoho-collector",
+	"States": {
+		"Lambda zoho-collector": {
+			"Type": "Task",
+			"Resource": "arn:aws:states:::lambda:invoke",
+			"Parameters": {
+				"FunctionName": "arn:aws:lambda:eu-central-1:258774948539:function:zoho-collector:$LATEST",
+				"Payload": {
+					"Input": {
+						"key1": "addons",
+						"key2": "coupons",
+						"key3": "customers",
+						"key4": "events",
+						"key5": "invoices",
+						"key6": "payments",
+						"key7": "plans",
+						"key8": "products",
+						"key9": "subscriptions"
+					}
+				}
+			},
+			"Next": "Zoho JSON2Parquet 1",
+			"Catch": [
+				{
+					"ErrorEquals": [
+						"States.ALL"
+					],
+					"Next": "exit_stepfunction"
+				}
+			]
+		},
+		"Zoho JSON2Parquet 1": {
+			"Type": "Parallel",
+			"Branches": [
+				{
+					"StartAt": "zoho_addons_json2parquet",
+					"States": {
+						"zoho_addons_json2parquet": {
+							"Type": "Task",
+							"Resource": "arn:aws:states:::glue:startJobRun.sync",
+							"Parameters": {
+								"JobName": "zoho_addons_json2parquet"
+							},
+							"End": true
+						}
+					}
+				},
+				{
+					"StartAt": "zoho_coupons_json2parquet",
+					"States": {
+						"zoho_coupons_json2parquet": {
+							"Type": "Task",
+							"Resource": "arn:aws:states:::glue:startJobRun.sync",
+							"Parameters": {
+								"JobName": "zoho_coupons_json2parquet"
+							},
+							"End": true
+						}
+					}
+				},
+				{
+					"StartAt": "zoho_customers_json2parquet",
+					"States": {
+						"zoho_customers_json2parquet": {
+							"Type": "Task",
+							"Resource": "arn:aws:states:::glue:startJobRun.sync",
+							"Parameters": {
+								"JobName": "zoho_customers_json2parquet"
+							},
+							"End": true
+						}
+					}
+				}
+			],
+			"Catch": [
+				{
+					"ErrorEquals": [
+						"States.ALL"
+					],
+					"Next": "exit_stepfunction"
+				}
+			],
+			"Next": "Zoho JSON2Parquet 2"
+		},
+		"Zoho JSON2Parquet 2": {
+			"Type": "Parallel",
+			"Branches": [
+				{
+					"StartAt": "zoho_events_json2parquet",
+					"States": {
+						"zoho_events_json2parquet": {
+							"Type": "Task",
+							"Resource": "arn:aws:states:::glue:startJobRun.sync",
+							"Parameters": {
+								"JobName": "zoho_events_json2parquet"
+							},
+							"End": true
+						}
+					}
+				},
+				{
+					"StartAt": "zoho_invoices_json2parquet",
+					"States": {
+						"zoho_invoices_json2parquet": {
+							"Type": "Task",
+							"Resource": "arn:aws:states:::glue:startJobRun.sync",
+							"Parameters": {
+								"JobName": "zoho_invoices_json2parquet"
+							},
+							"End": true
+						}
+					}
+				},
+				{
+					"StartAt": "zoho_payments_json2parquet",
+					"States": {
+						"zoho_payments_json2parquet": {
+							"Type": "Task",
+							"Resource": "arn:aws:states:::glue:startJobRun.sync",
+							"Parameters": {
+								"JobName": "zoho_payments_json2parquet"
+							},
+							"End": true
+						}
+					}
+				}
+			],
+			"Catch": [
+				{
+					"ErrorEquals": [
+						"States.ALL"
+					],
+					"Next": "exit_stepfunction"
+				}
+			],
+			"Next": "Zoho JSON2Parquet 3"
+		},
+		"Zoho JSON2Parquet 3": {
+			"Type": "Parallel",
+			"Branches": [
+				{
+					"StartAt": "zoho_plans_json2parquet",
+					"States": {
+						"zoho_plans_json2parquet": {
+							"Type": "Task",
+							"Resource": "arn:aws:states:::glue:startJobRun.sync",
+							"Parameters": {
+								"JobName": "zoho_plans_json2parquet"
+							},
+							"End": true
+						}
+					}
+				},
+				{
+					"StartAt": "zoho_products_json2parquet",
+					"States": {
+						"zoho_products_json2parquet": {
+							"Type": "Task",
+							"Resource": "arn:aws:states:::glue:startJobRun.sync",
+							"Parameters": {
+								"JobName": "zoho_products_json2parquet"
+							},
+							"End": true
+						}
+					}
+				},
+				{
+					"StartAt": "zoho_subscriptions_json2parquet",
+					"States": {
+						"zoho_subscriptions_json2parquet": {
+							"Type": "Task",
+							"Resource": "arn:aws:states:::glue:startJobRun.sync",
+							"Parameters": {
+								"JobName": "zoho_subscriptions_json2parquet"
+							},
+							"End": true
+						}
+					}
+				}
+			],
+			"Catch": [
+				{
+					"ErrorEquals": [
+						"States.ALL"
+					],
+					"Next": "exit_stepfunction"
+				}
+			],
+			"End": true
+		},
+		"exit_stepfunction": {
+			"Type": "Pass",
+			"Result": "Exit ZoHo Data Collector",
+			"End": true
+		}
+	}
+}
