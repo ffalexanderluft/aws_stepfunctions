@@ -8,8 +8,9 @@
       "FunctionName": "arn:aws:lambda:eu-central-1:258774948539:function:s3-toolbox:$LATEST",
       "Payload": {
         "Input":{
-    "bucket": "glue-ff-dwh-data",
-    "prefix": "parquet/zoho/"
+          "action": "emptyBucket",
+          "bucket": "glue-ff-dwh-data",
+          "prefix": "parquet/zoho/"
   }
         }
       },
