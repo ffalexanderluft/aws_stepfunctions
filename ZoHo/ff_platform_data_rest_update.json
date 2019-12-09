@@ -1,0 +1,64 @@
+{
+	"StartAt": "lambda:platform-data-update-companies",
+	"States": {
+		"lambda:platform-data-update-companies": {
+			"Type": "Task",
+			"Resource": "arn:aws:states:::lambda:invoke",
+			"Parameters": {
+				"FunctionName": "arn:aws:lambda:eu-central-1:258774948539:function:platform-data-collector:$LATEST",
+				"Payload": {
+					"Input": {
+						"key": "update_companies",
+						"url": "https://latest-nostage-usage-reporting-service-container-services.flowfact.company/public/quality/company/enable'"
+					}
+				}
+			},
+          "Catch": [ {
+            "ErrorEquals": ["States.TaskFailed"],
+            "Next": "lambda:platform-data-update-userdata"
+         } ],
+			"Next": "lambda:platform-data-update-userdata"
+		},
+      "lambda:platform-data-update-userdata": {
+			"Type": "Task",
+			"Resource": "arn:aws:states:::lambda:invoke",
+			"Parameters": {
+				"FunctionName": "arn:aws:lambda:eu-central-1:258774948539:function:platform-data-collector:$LATEST",
+				"Payload": {
+					"Input": {
+						"key": "update_user",
+						"url": "https://latest-nostage-usage-reporting-service-container-services.flowfact.company/public/quality/users/activated/create"
+					}
+				}
+			},
+        "Catch": [ {
+            "ErrorEquals": ["States.TaskFailed"],
+            "Next": "lambda:platform-data-update-useractions"
+         } ],
+			"Next": "lambda:platform-data-update-useractions"
+		},
+		"lambda:platform-data-update-useractions": {
+			"Type": "Task",
+			"Resource": "arn:aws:states:::lambda:invoke",
+			"Parameters": {
+				"FunctionName": "arn:aws:lambda:eu-central-1:258774948539:function:platform-data-collector:$LATEST",
+				"Payload": {
+					"Input": {
+						"key": "update_useractions",
+						"url": "https://latest-nostage-usage-reporting-service-container-services.flowfact.company/public/quality/events/setInfos"
+					}
+				}
+			},
+          "Catch": [ {
+            "ErrorEquals": ["States.TaskFailed"],
+            "Next": "exit_stepfunction"
+         } ],
+			"End": true
+        },
+      "exit_stepfunction": {
+         "Type": "Pass",
+         "Result": "Exit ff_platform_data_update_call",
+         "End": true
+      }
+	}
+}

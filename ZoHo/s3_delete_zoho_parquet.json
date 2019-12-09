@@ -1,0 +1,27 @@
+{
+    "StartAt": "Invoke Lambda function",
+    "States": {
+      "Invoke Lambda function": {
+    "Type": "Task",
+    "Resource": "arn:aws:states:::lambda:invoke",
+    "Parameters": {
+      "FunctionName": "arn:aws:lambda:eu-central-1:258774948539:function:s3-toolbox:$LATEST",
+      "Payload": {
+        "Input":{
+    "bucket": "glue-ff-dwh-data",
+    "prefix": "parquet/zoho/"
+  }
+        }
+      },
+    "Catch": [ {
+              "ErrorEquals": ["States.All"],
+              "Next": "exit_stepfunction"
+           } ],
+              "End": true
+  },"exit_stepfunction": {
+              "Type": "Pass",
+              "Result": "Exit ZoHo Clear Parquet Bucket",
+              "End": true
+          }
+    }
+  }
