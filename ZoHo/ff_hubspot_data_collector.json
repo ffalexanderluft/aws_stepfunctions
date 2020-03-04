@@ -10,7 +10,7 @@
       "Payload": {
         "Input": {
           "key": "contacts",
-    "url": "https://api.hubapi.com/contacts/v1/lists/all/contacts/all?count=250&hapikey=[hapikey]&property=email&property=lastname&property=firstname&property=company&property=hubspot_owner_id&property=phone&property=hs_analytics_first_referrer"
+    "url": "https://api.hubapi.com/contacts/v1/lists/all/contacts/all?count=250&hapikey=[hapikey]&property=email&property=lastname&property=firstname&property=company&property=hubspot_owner_id&property=phone&property=hs_analytics_first_referrer&property=hs_feedback_last_nps_rating&property=hs_feedback_last_nps_follow_up&property=hs_feedback_last_survey_date"
         }
       }
     },
