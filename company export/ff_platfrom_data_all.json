@@ -1,0 +1,30 @@
+{
+    "Comment": "Collect onboaring data from ff platform",
+    "StartAt": "onboarding_companies",
+    "States": {
+      "onboarding_companies": {
+    "Type": "Task",
+    "Resource": "arn:aws:states:::glue:startJobRun.sync",
+    "Parameters": {
+      "JobName": "onboarding_companies"
+    },
+    "Next": "onboarding_user"
+  },
+      "onboarding_user": {
+    "Type": "Task",
+    "Resource": "arn:aws:states:::glue:startJobRun.sync",
+    "Parameters": {
+      "JobName": "onboarding_user"
+    },
+    "Next": "onboarding_entities"
+  },
+      "onboarding_entities": {
+    "Type": "Task",
+    "Resource": "arn:aws:states:::glue:startJobRun.sync",
+    "Parameters": {
+      "JobName": "onboarding_entities"
+    },
+    "End": true
+  }
+    }
+  }

@@ -1,0 +1,104 @@
+{
+    "Comment": "A Hello World example of the Amazon States Language using Pass states",
+    "StartAt": "get_tickets",
+    "States": {
+      "get_tickets": {
+    "Type": "Task",
+    "Resource": "arn:aws:states:::lambda:invoke",
+    "Parameters": {
+      "FunctionName": "arn:aws:lambda:eu-central-1:258774948539:function:zendesk-collector:$LATEST",
+      "Payload": {
+        "Input": {
+          "key": "tickets",
+          "url": "https://flowfactservice.zendesk.com/api/v2/search.json?query=created>5days%3Atype:ticket&sort_by=created_at&sort_order=asc"
+        }
+      }
+    },
+    "Next": "get_ticktet_metrics"
+  },
+  "get_ticktet_metrics": {
+    "Type": "Task",
+    "Resource": "arn:aws:states:::lambda:invoke",
+    "Parameters": {
+      "FunctionName": "arn:aws:lambda:eu-central-1:258774948539:function:zendesk-collector:$LATEST",
+      "Payload": {
+        "Input": {
+          "key": "ticket_metrics",
+          "url": "https://flowfactservice.zendesk.com/api/v2/search.json?query=created>5days%3Atype:ticket&sort_by=created_at&sort_order=asc"
+        }
+      }
+    },
+    "Next": "get_organizations"
+  },
+  "get_organizations": {
+    "Type": "Task",
+    "Resource": "arn:aws:states:::lambda:invoke",
+    "Parameters": {
+      "FunctionName": "arn:aws:lambda:eu-central-1:258774948539:function:zendesk-collector:$LATEST",
+      "Payload": {
+        "Input": {
+          "key": "organizations",
+          "url": "https://flowfactservice.zendesk.com/api/v2/organizations.json?page=1"
+        }
+      }
+    },
+    "Next": "get_satisfaction_ratings"
+  },
+  "get_satisfaction_ratings": {
+    "Type": "Task",
+    "Resource": "arn:aws:states:::lambda:invoke",
+    "Parameters": {
+      "FunctionName": "arn:aws:lambda:eu-central-1:258774948539:function:zendesk-collector:$LATEST",
+      "Payload": {
+        "Input": {
+          "key": "satisfaction_ratings",
+          "url": "https://flowfactservice.zendesk.com/api/v2/satisfaction_ratings.json?page=1"
+        }
+      }
+    },
+    "Next": "get_groups"
+  },
+  "get_groups": {
+    "Type": "Task",
+    "Resource": "arn:aws:states:::lambda:invoke",
+    "Parameters": {
+      "FunctionName": "arn:aws:lambda:eu-central-1:258774948539:function:zendesk-collector:$LATEST",
+      "Payload": {
+        "Input": {
+          "key": "groups",
+          "url": "https://flowfactservice.zendesk.com/api/v2/groups.json?page=1"
+        }
+      }
+    },
+    "Next": "get_users"
+  },
+  "get_users": {
+    "Type": "Task",
+    "Resource": "arn:aws:states:::lambda:invoke",
+    "Parameters": {
+      "FunctionName": "arn:aws:lambda:eu-central-1:258774948539:function:zendesk-collector:$LATEST",
+      "Payload": {
+        "Input": {
+          "key": "users",
+          "url": "https://flowfactservice.zendesk.com/api/v2/users.json?page=1"
+        }
+      }
+    },
+    "Next": "get_brands"
+  },
+  "get_brands": {
+    "Type": "Task",
+    "Resource": "arn:aws:states:::lambda:invoke",
+    "Parameters": {
+      "FunctionName": "arn:aws:lambda:eu-central-1:258774948539:function:zendesk-collector:$LATEST",
+      "Payload": {
+        "Input": {
+          "key": "brands",
+          "url": "https://flowfactservice.zendesk.com/api/v2/brands.json?page=1"
+        }
+      }
+    },
+    "End": true
+  }
+    }
+  }

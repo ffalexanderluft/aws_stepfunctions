@@ -1,0 +1,75 @@
+{
+	"StartAt": "lambda:platform-data-collector-companies",
+	"States": {
+		"lambda:platform-data-collector-companies": {
+			"Type": "Task",
+			"Resource": "arn:aws:states:::lambda:invoke",
+			"Parameters": {
+				"FunctionName": "arn:aws:lambda:eu-central-1:258774948539:function:platform-data-collector:$LATEST",
+                "InvocationType": "Event",
+				"Payload": {
+					"Input": {
+						"key": "companies",
+						"url": "https://latest-nostage-usage-reporting-service-container-services.flowfact.company/public/companies/all/",
+						"nextpage": "json/ff_platform_data/companies/nextpage.txt",
+                      "paging":true,
+                      "num_entries":500,
+                      "days_offset":-180
+					}
+				}
+			},
+          "Catch": [ {
+            "ErrorEquals": ["States.TaskFailed"],
+            "Next": "lambda:platform-data-collector-userdata"
+         } ],
+			"Next": "lambda:platform-data-collector-userdata"
+		},
+      "lambda:platform-data-collector-userdata": {
+			"Type": "Task",
+			"Resource": "arn:aws:states:::lambda:invoke",
+			"Parameters": {
+				"FunctionName": "arn:aws:lambda:eu-central-1:258774948539:function:platform-data-collector:$LATEST",
+				"Payload": {
+					"Input": {
+						"key": "userdata",
+						"url": "https://latest-nostage-usage-reporting-service-container-services.flowfact.company/public/users/all/",
+						"nextpage": "json/ff_platform_data/userdata/nextpage.txt",
+                      "paging":false
+					}
+				}
+			},
+        "Catch": [ {
+            "ErrorEquals": ["States.TaskFailed"],
+            "Next": "lambda:platform-data-collector-useractions"
+         } ],
+			"Next": "lambda:platform-data-collector-useractions"
+		},
+		"lambda:platform-data-collector-useractions": {
+			"Type": "Task",
+			"Resource": "arn:aws:states:::lambda:invoke",
+			"Parameters": {
+				"FunctionName": "arn:aws:lambda:eu-central-1:258774948539:function:platform-data-collector:$LATEST",
+				"Payload": {
+					"Input": {
+						"key": "useractions",
+						"url": "https://latest-nostage-usage-reporting-service-container-services.flowfact.company/public/dump/",
+						"nextpage": "json/ff_platform_data/useractions/nextpage_{0}.txt",
+                      "paging":true,
+                      "num_entries":400,
+                      "days_offset":-3
+					}
+				}
+			},
+          "Catch": [ {
+            "ErrorEquals": ["States.TaskFailed"],
+            "Next": "exit_stepfunction"
+         } ],
+			"End": true
+        },
+      "exit_stepfunction": {
+         "Type": "Pass",
+         "Result": "Exit ff_platform_data_rest_call",
+         "End": true
+      }
+	}
+}
