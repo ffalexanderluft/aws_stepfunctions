@@ -1,0 +1,37 @@
+{
+    "Comment": "Call stored procedures on Redshift",
+    "StartAt": "Invoke measures.sp_customer_state",
+    "States": {
+      "Invoke measures.sp_customer_state": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+        "Parameters": {
+          "FunctionName": "arn:aws:lambda:eu-central-1:258774948539:function:aws-toolbox:$LATEST",
+          "Payload": {
+            "Input": {
+              "action": "redshift",
+              "db": "prod",
+              "user": "ff_dwh_service",
+              "passphrase": "3e9cfbc9ed0290c7034498b129ac9560dd5bb4bf855ec24a54c35120236df9e3",
+              "sqlcmd": "call dimensions.sp_customer_state();"
+            }
+          }
+        },
+        "End": true,
+        "TimeoutSeconds": 30,
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "exit_stepfunction"
+          }
+        ]
+      },
+      "exit_stepfunction": {
+        "Type": "Pass",
+        "Result": "Calling stored procedures failed",
+        "End": true
+      }
+    }
+  }
