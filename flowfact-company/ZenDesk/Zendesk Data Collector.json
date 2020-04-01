@@ -1,0 +1,121 @@
+{
+    "Comment": "Read data from Zendesk API",
+    "StartAt": "get ticket info",
+    "States": {
+      "get ticket info": {
+        "Type": "Parallel",
+        "Branches": [
+          {
+            "StartAt": "get_tickets",
+            "States": {
+              "get_tickets": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::lambda:invoke",
+                "Parameters": {
+                  "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-zendesk-collector:$LATEST",
+                  "Payload": {
+                    "Input": {
+                      "key": "tickets",
+                      "url": "https://flowfactservice.zendesk.com/api/v2/tickets.json?include=replies&page=1"
+                    }
+                  }
+                },
+                "End": true
+              }
+            }
+          },
+          {
+            "StartAt": "get_ticktet_metrics",
+            "States": {
+              "get_ticktet_metrics": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::lambda:invoke",
+                "Parameters": {
+                  "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-zendesk-collector:$LATEST",
+                  "Payload": {
+                    "Input": {
+                      "key": "ticket_metrics",
+                      "url": "https://flowfactservice.zendesk.com/api/v2/ticket_metrics.json?page=1"
+                    }
+                  }
+                },
+                "End": true
+              }
+            }
+          }
+        ],
+        "Next": "get_organizations"
+      },
+      "get_organizations": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-zendesk-collector:$LATEST",
+          "Payload": {
+            "Input": {
+              "key": "organizations",
+              "url": "https://flowfactservice.zendesk.com/api/v2/organizations.json?page=1"
+            }
+          }
+        },
+        "Next": "get_satisfaction_ratings"
+      },
+      "get_satisfaction_ratings": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-zendesk-collector:$LATEST",
+          "Payload": {
+            "Input": {
+              "key": "satisfaction_ratings",
+              "url": "https://flowfactservice.zendesk.com/api/v2/satisfaction_ratings.json?page=1",
+              "days_offset": -21
+            }
+          }
+        },
+        "Next": "get_groups"
+      },
+      "get_groups": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-zendesk-collector:$LATEST",
+          "Payload": {
+            "Input": {
+              "key": "groups",
+              "url": "https://flowfactservice.zendesk.com/api/v2/groups.json?page=1"
+            }
+          }
+        },
+        "Next": "get_users"
+      },
+      "get_users": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-zendesk-collector:$LATEST",
+          "Payload": {
+            "Input": {
+              "key": "users",
+              "url": "https://flowfactservice.zendesk.com/api/v2/users.json?page=1"
+            }
+          }
+        },
+        "Next": "get_brands"
+      },
+      "get_brands": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-zendesk-collector:$LATEST",
+          "Payload": {
+            "Input": {
+              "key": "brands",
+              "url": "https://flowfactservice.zendesk.com/api/v2/brands.json?page=1"
+            }
+          }
+        },
+        "End": true
+      }
+    }
+  }
