@@ -1,0 +1,131 @@
+{
+  "Comment": "call lambdas for reading hubspot REST",
+  "StartAt": "lambda:hubspot-collector-contacts",
+  "States": {
+    "lambda:hubspot-collector-contacts": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-hubspot-collector:$LATEST",
+        "Payload": {
+          "Input": {
+            "key": "contacts",
+            "url": "https://api.hubapi.com/contacts/v1/lists/all/contacts/all?count=250&hapikey=[hapikey]&property=email&property=lastname&property=firstname&property=company&property=hubspot_owner_id&property=phone&property=hs_analytics_first_referrer&property=hs_feedback_last_nps_rating&property=hs_feedback_last_nps_follow_up&property=hs_feedback_last_survey_date"
+          }
+        }
+      },
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
+          "Next": "lambda:hubspot-collector-owner"
+        }
+      ],
+      "Next": "lambda:hubspot-collector-owner"
+    },
+    "lambda:hubspot-collector-owner": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-hubspot-collector:$LATEST",
+        "Payload": {
+          "Input": {
+            "key": "owner",
+            "url": "https://api.hubapi.com/owners/v2/owners?hapikey=[hapikey]&includeInactive=true"
+          }
+        }
+      },
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
+          "Next": "lambda:hubspot-collector-engagements"
+        }
+      ],
+      "Next": "lambda:hubspot-collector-engagements"
+    },
+    "lambda:hubspot-collector-engagements": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-hubspot-engagements:$LATEST",
+        "Payload": {
+          "Input": {
+            "key": "engagements",
+            "url": "https://api.hubapi.com/engagements/v1/engagements/paged?hapikey=[hapikey]&limit=250"
+          }
+        }
+      },
+      "End": true,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.Unknown"
+          ],
+          "IntervalSeconds": 10,
+          "BackoffRate": 2,
+          "MaxAttempts": 5
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "lambda:hubspot-collector-companies"
+        }
+      ]
+    },
+    "lambda:hubspot-collector-companies": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-hubspot-collector:$LATEST",
+        "Payload": {
+          "Input": {
+            "key": "companies",
+            "url": "https://api.hubapi.com/companies/v2/companies/paged?hapikey=[hapikey]&limit=250&properties=name&properties=dsn"
+          }
+        }
+      },
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
+          "Next": "lambda:hubspot-collector-deals"
+        }
+      ],
+      "Next": "lambda:hubspot-collector-deals"
+    },
+    "lambda:hubspot-collector-deals": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-hubspot-collector:$LATEST",
+        "Payload": {
+          "Input": {
+            "key": "deals",
+            "url": "https://api.hubapi.com/deals/v1/deal/paged?hapikey=[hapikey]&count=250&includeAssociations=true&properties=dealname&properties=dealstage&properties=pipeline&properties=amount&properties=dealtype&properties=hubspot_owner_id&properties=createdate&properties=leadquelle"
+          }
+        }
+      },
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
+          "Next": "exit_stepfunction"
+        }
+      ],
+      "End": true
+    },
+    "exit_stepfunction": {
+      "Type": "Pass",
+      "Result": "Exit ff_hubspot_data_collector",
+      "End": true
+    }
+  }
+}
