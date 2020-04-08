@@ -126,7 +126,7 @@
           "Input": {
             "action": "glue",
             "task": "zendesk_to_redshift",
-            "type": "workflow"
+            "type": "Workflow"
           }
         }
       },

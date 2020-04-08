@@ -32,7 +32,7 @@
           "Input": {
             "action": "glue",
             "task": "hubspot_to_redshift",
-            "type": "workflow"
+            "type": "Workflow"
           }
         }
       },
