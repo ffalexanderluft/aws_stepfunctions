@@ -1,71 +1,71 @@
 {
-    "StartAt": "Invoke Lambda function ff-hubspot-associations",
-    "States": {
-      "Invoke Lambda function ff-hubspot-associations": {
-        "Type": "Task",
-        "Resource": "arn:aws:states:::lambda:invoke",
-        "Parameters": {
-          "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-hubspot-associations:$LATEST",
-          "Payload": {
-            "Input": {
-              "key": "associations",
-              "url": "https://api.hubapi.com/crm-associations/v1/associations/[contactid]/HUBSPOT_DEFINED/1?hapikey=[hapikey]"
-            }
+  "StartAt": "Invoke Lambda function ff-hubspot-associations",
+  "States": {
+    "Invoke Lambda function ff-hubspot-associations": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-hubspot-associations:$LATEST",
+        "Payload": {
+          "Input": {
+            "key": "associations",
+            "url": "https://api.hubapi.com/crm-associations/v1/associations/[contactid]/HUBSPOT_DEFINED/1?hapikey=[hapikey]"
           }
-        },
-        "Catch": [
-          {
-            "ErrorEquals": [
-              "States.TaskFailed"
-            ],
-            "Next": "exit_stepfunction"
-          }
-        ],
-        "Next": "Invoke Lambda function aws-toolbox"
+        }
       },
-      "Invoke Lambda function aws-toolbox": {
-        "Type": "Task",
-        "Resource": "arn:aws:states:::lambda:invoke",
-        "Parameters": {
-          "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-aws-toolbox:$LATEST",
-          "Payload": {
-            "Input": {
-              "action": "glue",
-              "task": "hubspot_to_redshift",
-              "type": "workflow"
-            }
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
+          "Next": "exit_stepfunction"
+        }
+      ],
+      "Next": "Invoke Lambda function aws-toolbox"
+    },
+    "Invoke Lambda function aws-toolbox": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-aws-toolbox:$LATEST",
+        "Payload": {
+          "Input": {
+            "action": "glue",
+            "task": "hubspot_to_redshift",
+            "type": "workflow"
           }
-        },
-        "End": true,
-        "Retry": [
-          {
-            "ErrorEquals": [
-              "Lambda.Unknown"
-            ],
-            "IntervalSeconds": 1,
-            "BackoffRate": 2,
-            "MaxAttempts": 2
-          },
-          {
-            "ErrorEquals": [
-              "States.ALL"
-            ],
-            "IntervalSeconds": 5
-          }
-        ],
-        "Catch": [
-          {
-            "ErrorEquals": [
-              "States.ALL"
-            ],
-            "Next": "exit_stepfunction"
-          }
-        ]
+        }
       },
-      "exit_stepfunction": {
-        "Type": "Pass",
-        "Result": "Exit ff_hubspot_associations",
-        "End": true
-      }
+      "End": true,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.Unknown"
+          ],
+          "IntervalSeconds": 1,
+          "BackoffRate": 2,
+          "MaxAttempts": 2
+        },
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 5
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "exit_stepfunction"
+        }
+      ]
+    },
+    "exit_stepfunction": {
+      "Type": "Pass",
+      "Result": "Exit ff_hubspot_associations",
+      "End": true
     }
   }
+}

@@ -1,104 +1,165 @@
 {
-    "Comment": "Read data from Zendesk API",
-    "StartAt": "get_tickets",
-    "States": {
-      "get_tickets": {
-        "Type": "Task",
-        "Resource": "arn:aws:states:::lambda:invoke",
-        "Parameters": {
-          "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:zendesk-collector:$LATEST",
-          "Payload": {
-            "Input": {
-              "key": "tickets",
-              "url": "https://flowfactservice.zendesk.com/api/v2/search.json?query=created>5days%3Atype:ticket&sort_by=created_at&sort_order=asc"
+  "Comment": "Read data from Zendesk API",
+  "StartAt": "get ticket info",
+  "States": {
+    "get ticket info": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "get_tickets",
+          "States": {
+            "get_tickets": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "Parameters": {
+                "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-zendesk-collector:$LATEST",
+                "Payload": {
+                  "Input": {
+                    "key": "tickets",
+                    "url": "https://flowfactservice.zendesk.com/api/v2/tickets.json?include=replies&page=1"
+                  }
+                }
+              },
+              "End": true
             }
           }
         },
-        "Next": "get_ticktet_metrics"
+        {
+          "StartAt": "get_ticktet_metrics",
+          "States": {
+            "get_ticktet_metrics": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "Parameters": {
+                "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-zendesk-collector:$LATEST",
+                "Payload": {
+                  "Input": {
+                    "key": "ticket_metrics",
+                    "url": "https://flowfactservice.zendesk.com/api/v2/ticket_metrics.json?page=1"
+                  }
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "Next": "get_organizations"
+    },
+    "get_organizations": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-zendesk-collector:$LATEST",
+        "Payload": {
+          "Input": {
+            "key": "organizations",
+            "url": "https://flowfactservice.zendesk.com/api/v2/organizations.json?page=1"
+          }
+        }
       },
-      "get_ticktet_metrics": {
-        "Type": "Task",
-        "Resource": "arn:aws:states:::lambda:invoke",
-        "Parameters": {
-          "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:zendesk-collector:$LATEST",
-          "Payload": {
-            "Input": {
-              "key": "ticket_metrics",
-              "url": "https://flowfactservice.zendesk.com/api/v2/search.json?query=created>5days%3Atype:ticket&sort_by=created_at&sort_order=asc"
-            }
+      "Next": "get_satisfaction_ratings"
+    },
+    "get_satisfaction_ratings": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-zendesk-collector:$LATEST",
+        "Payload": {
+          "Input": {
+            "key": "satisfaction_ratings",
+            "url": "https://flowfactservice.zendesk.com/api/v2/satisfaction_ratings.json?page=1",
+            "days_offset": -21
           }
-        },
-        "Next": "get_organizations"
+        }
       },
-      "get_organizations": {
-        "Type": "Task",
-        "Resource": "arn:aws:states:::lambda:invoke",
-        "Parameters": {
-          "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:zendesk-collector:$LATEST",
-          "Payload": {
-            "Input": {
-              "key": "organizations",
-              "url": "https://flowfactservice.zendesk.com/api/v2/organizations.json?page=1"
-            }
+      "Next": "get_groups"
+    },
+    "get_groups": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-zendesk-collector:$LATEST",
+        "Payload": {
+          "Input": {
+            "key": "groups",
+            "url": "https://flowfactservice.zendesk.com/api/v2/groups.json?page=1"
           }
-        },
-        "Next": "get_satisfaction_ratings"
+        }
       },
-      "get_satisfaction_ratings": {
-        "Type": "Task",
-        "Resource": "arn:aws:states:::lambda:invoke",
-        "Parameters": {
-          "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:zendesk-collector:$LATEST",
-          "Payload": {
-            "Input": {
-              "key": "satisfaction_ratings",
-              "url": "https://flowfactservice.zendesk.com/api/v2/satisfaction_ratings.json?page=1"
-            }
+      "Next": "get_users"
+    },
+    "get_users": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-zendesk-collector:$LATEST",
+        "Payload": {
+          "Input": {
+            "key": "users",
+            "url": "https://flowfactservice.zendesk.com/api/v2/users.json?page=1"
           }
-        },
-        "Next": "get_groups"
+        }
       },
-      "get_groups": {
-        "Type": "Task",
-        "Resource": "arn:aws:states:::lambda:invoke",
-        "Parameters": {
-          "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:zendesk-collector:$LATEST",
-          "Payload": {
-            "Input": {
-              "key": "groups",
-              "url": "https://flowfactservice.zendesk.com/api/v2/groups.json?page=1"
-            }
+      "Next": "get_brands"
+    },
+    "get_brands": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-zendesk-collector:$LATEST",
+        "Payload": {
+          "Input": {
+            "key": "brands",
+            "url": "https://flowfactservice.zendesk.com/api/v2/brands.json?page=1"
           }
-        },
-        "Next": "get_users"
+        }
       },
-      "get_users": {
-        "Type": "Task",
-        "Resource": "arn:aws:states:::lambda:invoke",
-        "Parameters": {
-          "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:zendesk-collector:$LATEST",
-          "Payload": {
-            "Input": {
-              "key": "users",
-              "url": "https://flowfactservice.zendesk.com/api/v2/users.json?page=1"
-            }
+      "Next": "Invoke Lambda function aws-toolbox"
+    },
+    "Invoke Lambda function aws-toolbox": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:ff-aws-toolbox:$LATEST",
+        "Payload": {
+          "Input": {
+            "action": "glue",
+            "task": "zendesk_to_redshift",
+            "type": "workflow"
           }
-        },
-        "Next": "get_brands"
+        }
       },
-      "get_brands": {
-        "Type": "Task",
-        "Resource": "arn:aws:states:::lambda:invoke",
-        "Parameters": {
-          "FunctionName": "arn:aws:lambda:eu-west-1:181470217648:function:zendesk-collector:$LATEST",
-          "Payload": {
-            "Input": {
-              "key": "brands",
-              "url": "https://flowfactservice.zendesk.com/api/v2/brands.json?page=1"
-            }
-          }
+      "End": true,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.Unknown"
+          ],
+          "IntervalSeconds": 1,
+          "BackoffRate": 2,
+          "MaxAttempts": 2
         },
-        "End": true
-      }
+        {
+          "ErrorEquals": [
+            "State.ALL"
+          ],
+          "IntervalSeconds": 5
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "exit_stepfunction"
+        }
+      ]
+    },
+    "exit_stepfunction": {
+      "Type": "Pass",
+      "Result": "Exit ff_hubspot_data_collector",
+      "End": true
     }
   }
+}
