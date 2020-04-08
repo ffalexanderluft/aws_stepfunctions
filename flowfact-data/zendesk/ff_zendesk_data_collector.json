@@ -115,9 +115,9 @@
           }
         }
       },
-      "Next": "Invoke Lambda function aws-toolbox"
+      "Next": "Invoke Glue workflow zendesk_to_redshift"
     },
-    "Invoke Lambda function aws-toolbox": {
+    "Invoke Glue workflow zendesk_to_redshift": {
       "Type": "Task",
       "Resource": "arn:aws:states:::lambda:invoke",
       "Parameters": {
